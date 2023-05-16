@@ -1,0 +1,460 @@
+{
+  "openapi" : "3.0.0",
+  "info" : {
+    "title" : "Drugstore API",
+    "description" : "# Introduction\nHello World!!!\nTesting testing... 1.. 2.. 3... Can anyone hear me?\nWelcome to the **Drugstore API v 1.0.0**\n\nThis API currently supports retrieving products (with details) and adding new products to our DB.\n\n# Authentication\nThis API is protected with OAuth OIDC authentication protocol. In order to use this API commercially please contact us to register with our Authorization Server and obtain your cliend_id and secret. You will be then able to get an access token to call the API with. The process overview is shown at the diagram below.\n\n![Sample OIDC sequence diagram](https://d33wubrfki0l68.cloudfront.net/3ad9fa733a0ced7c349230beaf1e481560aa6065/602fe/assets-jekyll/blog/client-creds-with-spring-boot/client-creds-jwt-90615dab46fe5a23d5bca2a29ec42e518683860826b70840fa2a6cea62108440.png)\n\nFor further details please refer to the OAuth 2.0 RFC (Client Credentials Grant section).\n\n[OAuth2 RFC - Client Credentials Grant](https://tools.ietf.org/html/rfc6749#section-4.4)\n# Mocks\nThis API documentation is available together with a Postman and Swaggerhub Mock Servers returning sample responses to respective endpoints. Please note that the mock servers do not require an access token and are returning predefined, sample, static responses.\n\nPlease also our Postman Documentation at [Drugstore API 1.0.0 Postman Documentation](https://documenter.getpostman.com/view/422631/TVKHVFae#f6706706-da69-4649-80b2-de7ebf28ffd7)",
+    "contact" : {
+      "name" : " - do you need further support? Drop us a line!",
+      "email" : "testksa@testksa.pl"
+    },
+    "version" : "1.0.0"
+  },
+  "servers" : [ {
+    "url" : "https://8a8a7126-bbf8-4355-bdcc-3cfb5112e05e.mock.pstmn.io",
+    "description" : "Postman Mock Server"
+  }, {
+    "url" : "https://virtserver.swaggerhub.com/test-ksa/Drugstore/1.0.0",
+    "description" : "SwaggerHub API Sample Mock Server"
+  } ],
+  "paths" : {
+    "/products" : {
+      "get" : {
+        "tags" : [ "Product Management" ],
+        "summary" : "Returns a list of all products",
+        "description" : "This resource returns an array of all available products and their basic attributes.",
+        "operationId" : "listProducts",
+        "parameters" : [ {
+          "name" : "X-REQUEST-ID",
+          "in" : "header",
+          "description" : "Unique request identifier",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "a6aa32cc-f9ce-11ea-adc1-0242ac120002"
+        }, {
+          "name" : "Authorization",
+          "in" : "header",
+          "description" : "OAuth2 Access Token",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "Bearer edKKACtPAb7zGlwSzvs72PvhAbGmB8K1ZrGxpcNM"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successfully return an array of products",
+            "headers" : {
+              "x-next" : {
+                "description" : "A link to the next page of responses",
+                "style" : "simple",
+                "explode" : false,
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Products"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                },
+                "examples" : {
+                  "MissingHeader" : {
+                    "value" : {
+                      "code" : "missing_request_id",
+                      "message" : "Error - missing request header: X-REQUEST-ID"
+                    }
+                  },
+                  "InvalidSchema" : {
+                    "value" : {
+                      "code" : "invalid_schema",
+                      "message" : "Error - invalid input json schema - missing field: name"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                },
+                "examples" : {
+                  "InvalidToken" : {
+                    "value" : {
+                      "code" : "invalid_token",
+                      "message" : "Error - access token is invalid / expired"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Product Management" ],
+        "summary" : "Adds a new product",
+        "description" : "This resource lets you add a new product to the DB. You can provide the product attributes. The product id will be automatically generated and returned in the response body. Currently supported product categories are\n* OTC\n* Prescription",
+        "operationId" : "createProduct",
+        "parameters" : [ {
+          "name" : "X-REQUEST-ID",
+          "in" : "header",
+          "description" : "Unique request identifier",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "a6aa32cc-f9ce-11ea-adc1-0242ac120002"
+        }, {
+          "name" : "Authorization",
+          "in" : "header",
+          "description" : "OAuth2 Access Token",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "Bearer edKKACtPAb7zGlwSzvs72PvhAbGmB8K1ZrGxpcNM"
+        } ],
+        "requestBody" : {
+          "description" : "Product to be added",
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/NewProduct"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Successfully added a Product",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProductDetails"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                },
+                "examples" : {
+                  "MissingHeader" : {
+                    "value" : {
+                      "code" : "missing_request_id",
+                      "message" : "Error - missing request header: X-REQUEST-ID"
+                    }
+                  },
+                  "InvalidSchema" : {
+                    "value" : {
+                      "code" : "invalid_schema",
+                      "message" : "Error - invalid input json schema - missing field: name"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                },
+                "examples" : {
+                  "InvalidToken" : {
+                    "value" : {
+                      "code" : "invalid_token",
+                      "message" : "Error - access token is invalid / expired"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{productId}" : {
+      "get" : {
+        "tags" : [ "Product Management" ],
+        "summary" : "Detailed information for a specific product.",
+        "operationId" : "showProductById",
+        "parameters" : [ {
+          "name" : "X-REQUEST-ID",
+          "in" : "header",
+          "description" : "Unique request identifier",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "example" : "a6aa32cc-f9ce-11ea-adc1-0242ac120002"
+        }, {
+          "name" : "Authorization",
+          "in" : "header",
+          "description" : "OAuth2 Access Token",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "Bearer edKKACtPAb7zGlwSzvs72PvhAbGmB8K1ZrGxpcNM"
+        }, {
+          "name" : "productId",
+          "in" : "path",
+          "description" : "The id of the product to retrieve",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successfully returned product details",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProductDetails"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                },
+                "examples" : {
+                  "MissingHeader" : {
+                    "value" : {
+                      "code" : "missing_request_id",
+                      "message" : "Error - missing request header: X-REQUEST-ID"
+                    }
+                  },
+                  "InvalidSchema" : {
+                    "value" : {
+                      "code" : "invalid_schema",
+                      "message" : "Error - invalid input json schema - missing field: name"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                },
+                "examples" : {
+                  "InvalidToken" : {
+                    "value" : {
+                      "code" : "invalid_token",
+                      "message" : "Error - access token is invalid / expired"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "Product" : {
+        "required" : [ "category", "id", "name" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "category" : {
+            "$ref" : "#/components/schemas/ProductCategories"
+          },
+          "tag" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ProductDetails" : {
+        "required" : [ "id", "name" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "category" : {
+            "$ref" : "#/components/schemas/ProductCategories"
+          },
+          "tag" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          }
+        }
+      },
+      "NewProduct" : {
+        "required" : [ "category", "name" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "category" : {
+            "$ref" : "#/components/schemas/ProductCategories"
+          },
+          "tag" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ProductCategories" : {
+        "type" : "string",
+        "enum" : [ "OTC", "Prescription" ]
+      },
+      "Products" : {
+        "type" : "array",
+        "items" : {
+          "$ref" : "#/components/schemas/Product"
+        }
+      },
+      "Error" : {
+        "required" : [ "code", "message" ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "responses" : {
+      "400" : {
+        "description" : "Bad Request",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            },
+            "examples" : {
+              "MissingHeader" : {
+                "value" : {
+                  "code" : "missing_request_id",
+                  "message" : "Error - missing request header: X-REQUEST-ID"
+                }
+              },
+              "InvalidSchema" : {
+                "value" : {
+                  "code" : "invalid_schema",
+                  "message" : "Error - invalid input json schema - missing field: name"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401" : {
+        "description" : "Unauthorized",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            },
+            "examples" : {
+              "InvalidToken" : {
+                "value" : {
+                  "code" : "invalid_token",
+                  "message" : "Error - access token is invalid / expired"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "parameters" : {
+      "authorizationHeader" : {
+        "name" : "Authorization",
+        "in" : "header",
+        "description" : "OAuth2 Access Token",
+        "required" : true,
+        "style" : "simple",
+        "explode" : false,
+        "schema" : {
+          "type" : "string"
+        },
+        "example" : "Bearer edKKACtPAb7zGlwSzvs72PvhAbGmB8K1ZrGxpcNM"
+      },
+      "requestIdHeader" : {
+        "name" : "X-REQUEST-ID",
+        "in" : "header",
+        "description" : "Unique request identifier",
+        "required" : true,
+        "style" : "simple",
+        "explode" : false,
+        "schema" : {
+          "type" : "string",
+          "format" : "uuid"
+        },
+        "example" : "a6aa32cc-f9ce-11ea-adc1-0242ac120002"
+      }
+    }
+  }
+}
